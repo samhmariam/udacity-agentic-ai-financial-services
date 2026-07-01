@@ -27,29 +27,29 @@ from src.foundation_sar import (
 # Skip detection - Check if compliance officer has real implementation
 try:
     # Try to create a test instance to see if the class is implemented
-    test_client = Mock()
-    test_logger = Mock()
-    test_agent = ComplianceOfficerAgent(test_client, test_logger)
+    probe_client = Mock()
+    probe_logger = Mock()
+    probe_agent = ComplianceOfficerAgent(probe_client, probe_logger)
     
     # Check for actual implementation vs placeholder
-    has_real_prompt = (hasattr(test_agent, 'system_prompt') and 
-                      test_agent.system_prompt is not None and
-                      "TODO" not in str(test_agent.system_prompt) and
-                      len(str(test_agent.system_prompt)) > 200)
+    has_real_prompt = (hasattr(probe_agent, 'system_prompt') and
+                      probe_agent.system_prompt is not None and
+                      "TODO" not in str(probe_agent.system_prompt) and
+                      len(str(probe_agent.system_prompt)) > 200)
     
-    has_generate_method = hasattr(test_agent, 'generate_compliance_narrative')
+    has_generate_method = hasattr(probe_agent, 'generate_compliance_narrative')
     
     # Check if generate_compliance_narrative is implemented (not just 'pass')
     if has_generate_method:
         import inspect
-        source = inspect.getsource(test_agent.generate_compliance_narrative)
+        source = inspect.getsource(probe_agent.generate_compliance_narrative)
         method_implemented = not ('pass' in source and source.count('\n') < 10)
     else:
         method_implemented = False
     
     # Check if agent has required attributes that indicate real implementation
-    has_client_attr = hasattr(test_agent, 'client')
-    has_logger_attr = hasattr(test_agent, 'logger')
+    has_client_attr = hasattr(probe_agent, 'client')
+    has_logger_attr = hasattr(probe_agent, 'logger')
     
     COMPLIANCE_OFFICER_IMPLEMENTED = (has_real_prompt and has_generate_method and 
                                     method_implemented and has_client_attr and has_logger_attr)
@@ -215,10 +215,16 @@ class TestComplianceOfficerAgent:
             risk_rating="Low"
         )
         
+        account = AccountData(
+            account_id="ACC_TEST", customer_id="CUST_TEST",
+            account_type="Checking", opening_date="2020-01-01",
+            current_balance=1000.0, average_monthly_balance=1000.0,
+            status="Active"
+        )
         case = CaseData(
             case_id="CASE_WORDCOUNT",
             customer=customer,
-            accounts=[],
+            accounts=[account],
             transactions=[TransactionData(
                 transaction_id="TXN_TEST",
                 account_id="ACC_TEST",
@@ -272,10 +278,16 @@ class TestComplianceOfficerAgent:
             risk_rating="Low"
         )
         
+        account = AccountData(
+            account_id="ACC_ERROR", customer_id="CUST_ERROR",
+            account_type="Checking", opening_date="2020-01-01",
+            current_balance=100.0, average_monthly_balance=100.0,
+            status="Active"
+        )
         case = CaseData(
             case_id="CASE_ERROR",
             customer=customer,
-            accounts=[],
+            accounts=[account],
             transactions=[TransactionData(
                 transaction_id="TXN_ERROR",
                 account_id="ACC_ERROR",
@@ -305,6 +317,7 @@ class TestComplianceOfficerAgent:
         assert len(logger.entries) == 1
         assert logger.entries[0]["success"] == False
         assert "JSON parsing failed" in logger.entries[0]["reasoning"]
+        assert mock_client.chat.completions.create.call_count == 2
         
         # Cleanup
         if os.path.exists("test_json_error.jsonl"):
@@ -420,7 +433,7 @@ This completes the analysis.'''
         mock_client = Mock()
         mock_response = Mock()
         mock_response.choices = [Mock()]
-        mock_response.choices[0].message.content = '''{"narrative": "Test narrative", "narrative_reasoning": "Test", "regulatory_citations": ["Test"], "completeness_check": true}'''
+        mock_response.choices[0].message.content = '''{"narrative": "API Test (CUST_API) conducted a suspicious $1,000 transaction on 2025-01-01 via Test method. This pattern indicates unusual activity requiring review.", "narrative_reasoning": "Included all required facts.", "regulatory_citations": ["31 CFR 1020.320 (BSA)"], "completeness_check": true}'''
         mock_client.chat.completions.create.return_value = mock_response
         
         logger = ExplainabilityLogger("test_api_compliance.jsonl")
@@ -437,10 +450,16 @@ This completes the analysis.'''
             risk_rating="Low"
         )
         
+        account = AccountData(
+            account_id="ACC_API", customer_id="CUST_API",
+            account_type="Checking", opening_date="2021-01-01",
+            current_balance=1000.0, average_monthly_balance=1000.0,
+            status="Active"
+        )
         case = CaseData(
             case_id="CASE_API",
             customer=customer,
-            accounts=[],
+            accounts=[account],
             transactions=[TransactionData(
                 transaction_id="TXN_API",
                 account_id="ACC_API",
@@ -476,3 +495,23 @@ This completes the analysis.'''
         # Cleanup
         if os.path.exists("test_api_compliance.jsonl"):
             os.remove("test_api_compliance.jsonl")
+
+    def test_compliance_validator_requires_all_narrative_elements(self):
+        agent = ComplianceOfficerAgent(Mock(), Mock())
+        incomplete = agent._validate_narrative_compliance("Suspicious activity occurred.")
+        assert incomplete["has_amount"] is False
+        assert incomplete["has_timeframe"] is False
+        assert incomplete["has_rationale"] is False
+
+    @pytest.mark.parametrize(
+        "citations, expected",
+        [
+            (["31 CFR 1020.320 (BSA)"], True),
+            (["FinCEN SAR Instructions"], True),
+            (["Internal policy"], False),
+            ([], False),
+        ],
+    )
+    def test_regulatory_citation_validation(self, citations, expected):
+        agent = ComplianceOfficerAgent(Mock(), Mock())
+        assert agent._validate_regulatory_citations(citations)["valid"] is expected

@@ -1,0 +1,62 @@
+{
+  "sar_metadata": {
+    "sar_id": "SAR_d0a12525-fcf5-41c4-b51c-3190349a28c1",
+    "filing_date": "2026-07-01T17:54:41.316281+00:00",
+    "filing_type": "Suspicious Activity Report",
+    "ai_generated": true,
+    "review_status": "human_approved",
+    "schema_version": "1.0",
+    "sha256": "017afb9fc3039b32e9c48ee9df9125ce2deea71e0cd321c5b3acdf040b2ec439"
+  },
+  "subject_information": {
+    "customer_name": "Jacqueline Rodriguez",
+    "customer_id": "CUST_0111",
+    "address": "49331 Lewis Views Apt. 516, Lake Maryshire, DE 59549",
+    "date_of_birth": "2001-02-01",
+    "ssn_last_4": "9067",
+    "customer_since": "2022-02-27",
+    "risk_rating": "High",
+    "account_ids": [
+      "CUST_0111_ACC_1",
+      "CUST_0111_ACC_2",
+      "CUST_0111_ACC_3"
+    ]
+  },
+  "suspicious_activity": {
+    "classification": "Money_Laundering",
+    "risk_level": "High",
+    "confidence_score": 0.8,
+    "narrative": "Jacqueline Rodriguez (CUST_0111) engaged in suspicious activity in 2025. Multiple large transactions, including frequent wire transfers, were observed. Notably, on 2025-07-29, a wire transfer credit of $76,517.25 was received, followed by four large wire transfer debits totaling $49,517.51 within two days. This pattern may indicate attempts to obscure the origin of funds.",
+    "key_indicators": [
+      "High risk rating",
+      "Large transaction amounts",
+      "Frequent wire transfers"
+    ],
+    "ai_reasoning": "The customer has a high risk rating and has made multiple large transactions, including several wire transfers in a short period of time. This could indicate attempts to hide the origin of funds.",
+    "transaction_count": 121,
+    "absolute_transaction_total": 386834.91,
+    "activity_start_date": "2025-02-05",
+    "activity_end_date": "2025-08-01"
+  },
+  "regulatory_compliance": {
+    "citations": [
+      "31 CFR 1020.320 (BSA)"
+    ],
+    "narrative_word_count": 52,
+    "completeness_check": true,
+    "compliance_status": "approved"
+  },
+  "filing_institution": {
+    "name": "Demo Financial Institution",
+    "contact_role": "BSA/AML Compliance Officer"
+  },
+  "audit_trail": {
+    "case_id": "f58000cf-dc41-4710-9050-b38eb82cbd65",
+    "processing_date": "2026-07-01T17:54:41.316281+00:00",
+    "ai_agents_used": [
+      "RiskAnalyst",
+      "ComplianceOfficer"
+    ],
+    "human_review_required": true
+  }
+}

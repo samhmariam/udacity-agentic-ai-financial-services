@@ -1,0 +1,61 @@
+{
+  "report_id": "WORKFLOW_e7120cf7-6477-473b-9cff-e8b7786a2d45",
+  "created_at": "2026-07-01T18:27:21.249028+00:00",
+  "metrics": {
+    "total_cases": 2,
+    "approved_sars": 2,
+    "rejected_cases": 0,
+    "error_count": 0,
+    "approval_rate": 1.0,
+    "rejection_rate": 0.0,
+    "average_processing_time_ms": 10669.763349927962,
+    "compliance_calls_executed": 2,
+    "compliance_calls_avoided": 0,
+    "compliance_call_savings_rate": 0.0,
+    "decision_count": 2
+  },
+  "decision_analysis": {
+    "classification_distribution": {
+      "Money_Laundering": 1,
+      "Structuring": 1
+    },
+    "average_confidence": 0.825,
+    "minimum_confidence": 0.8,
+    "maximum_confidence": 0.85,
+    "human_rejection_rate": 0.0
+  },
+  "case_decisions": [
+    {
+      "case_id": "0107a51f-ba28-4856-aab3-68ed8845e63b",
+      "customer_name": "Jacqueline Rodriguez",
+      "decision": "PROCEED",
+      "raw_decision": "yes",
+      "reviewer_id": "demo_reviewer",
+      "rationale": "No additional reviewer rationale provided.",
+      "decision_timestamp": "2026-07-01T18:27:05.534845+00:00",
+      "ai_classification": "Money_Laundering",
+      "ai_confidence": 0.85,
+      "ai_risk_level": "High",
+      "processing_time_ms": 12006.415199954063,
+      "error": null,
+      "sar_path": "C:\\Users\\samue\\Downloads\\Udacity\\Nanodegree\\udacity-agentic-ai-financial-services\\projects\\01-trace-risk-compliance-engine\\outputs\\filed_sars\\SAR_a2cb628d-719c-45ee-8360-9e768815dc43.json",
+      "sar_id": "SAR_a2cb628d-719c-45ee-8360-9e768815dc43"
+    },
+    {
+      "case_id": "50c40798-45f3-40e5-bf39-4acc01c837d4",
+      "customer_name": "Cindy Clayton",
+      "decision": "PROCEED",
+      "raw_decision": "yes",
+      "reviewer_id": "demo_reviewer",
+      "rationale": "No additional reviewer rationale provided.",
+      "decision_timestamp": "2026-07-01T18:27:15.985379+00:00",
+      "ai_classification": "Structuring",
+      "ai_confidence": 0.8,
+      "ai_risk_level": "High",
+      "processing_time_ms": 9333.111499901861,
+      "error": null,
+      "sar_path": "C:\\Users\\samue\\Downloads\\Udacity\\Nanodegree\\udacity-agentic-ai-financial-services\\projects\\01-trace-risk-compliance-engine\\outputs\\filed_sars\\SAR_eec5a00f-5dcc-4c4a-a123-2e99c4ee3a03.json",
+      "sar_id": "SAR_eec5a00f-5dcc-4c4a-a123-2e99c4ee3a03"
+    }
+  ]
+}

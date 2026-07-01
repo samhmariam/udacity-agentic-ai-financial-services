@@ -7,19 +7,14 @@ This agent performs suspicious activity classification using Chain-of-Thought re
 It analyzes customer profiles, account behavior, and transaction patterns to identify
 potential financial crimes.
 
-YOUR TASKS:
-- Study Chain-of-Thought prompting methodology
-- Design system prompt with structured reasoning framework
-- Implement case analysis with proper error handling
-- Parse and validate structured JSON responses
-- Create comprehensive audit logging
+The agent uses structured prompting, schema-validated output, bounded parsing
+recovery, and audit logging suitable for the SAR workflow.
 """
 
 import json
 import re
 import time
-from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any
 from dotenv import load_dotenv
 
 try:
@@ -34,7 +29,7 @@ class RiskAnalystAgent:
     """
     Risk Analyst agent using Chain-of-Thought reasoning.
     
-    TODO: Implement agent that:
+    The agent:
     - Uses systematic Chain-of-Thought prompting
     - Classifies suspicious activity patterns
     - Returns structured JSON output
@@ -42,7 +37,8 @@ class RiskAnalystAgent:
     - Logs all operations for audit
     """
     
-    def __init__(self, openai_client, explainability_logger, model="gpt-4"):
+    def __init__(self, openai_client, explainability_logger, model="gpt-4",
+                 max_parse_retries=1):
         """Initialize the Risk Analyst Agent
         
         Args:
@@ -53,6 +49,7 @@ class RiskAnalystAgent:
         self.client = openai_client
         self.logger = explainability_logger
         self.model = model
+        self.max_parse_retries = max(0, int(max_parse_retries))
         
         self.system_prompt = """You are a Senior Financial Crime Risk Analyst. Apply a
             Chain-of-Thought, step-by-step framework internally: (1) review the supplied data,
@@ -74,7 +71,7 @@ class RiskAnalystAgent:
         """
         Perform risk analysis on a case using Chain-of-Thought reasoning.
         
-        TODO: Implement analysis that:
+        The analysis:
         - Creates structured user prompt with case details
         - Makes OpenAI API call with system prompt
         - Parses and validates JSON response
@@ -87,22 +84,45 @@ class RiskAnalystAgent:
         started = time.perf_counter()
         case_id = getattr(case_data, "case_id", "unknown")
         prompt = self._format_case_for_prompt(case_data)
+        messages = [
+            {"role": "system", "content": self.system_prompt},
+            {"role": "user", "content": prompt},
+        ]
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": prompt},
-                ],
-                temperature=0.3,
-                max_tokens=1000,
-            )
-            content = response.choices[0].message.content
-            try:
-                payload = json.loads(self._extract_json_from_response(content))
-                result = RiskAnalystOutput(**payload)
-            except (json.JSONDecodeError, TypeError, ValueError) as exc:
-                raise ValueError(f"Failed to parse Risk Analyst JSON output: {exc}") from exc
+            result = None
+            parse_errors = []
+            for attempt in range(self.max_parse_retries + 1):
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    temperature=0.3,
+                    max_tokens=1000,
+                )
+                try:
+                    content = response.choices[0].message.content
+                    payload = json.loads(self._extract_json_from_response(content))
+                    result = RiskAnalystOutput(**payload)
+                    break
+                except (AttributeError, IndexError, json.JSONDecodeError,
+                        TypeError, ValueError) as exc:
+                    parse_errors.append(str(exc))
+                    if attempt >= self.max_parse_retries:
+                        detail = "; ".join(parse_errors)
+                        raise ValueError(
+                            "Failed to parse Risk Analyst JSON output after "
+                            f"{attempt + 1} attempt(s): {detail}"
+                        ) from exc
+                    messages = messages + [
+                        {"role": "assistant", "content": content or ""},
+                        {
+                            "role": "user",
+                            "content": (
+                                "Your response did not match the required JSON schema. "
+                                "Return only one valid JSON object with classification, "
+                                "confidence_score, reasoning, key_indicators, and risk_level."
+                            ),
+                        },
+                    ]
 
             self._log(case_id, prompt, self._as_dict(result), result.reasoning,
                       started, True)
@@ -116,7 +136,7 @@ class RiskAnalystAgent:
     def _extract_json_from_response(self, response_content: str) -> str:
         """Extract JSON content from LLM response
         
-        TODO: Implement JSON extraction that handles:
+        Handles:
         - JSON in code blocks (```json)
         - JSON in plain text
         - Malformed responses
@@ -141,7 +161,7 @@ class RiskAnalystAgent:
     def _format_case_for_prompt(self, case_data) -> str:
         """Format case data for the analysis prompt
         
-        TODO: Create readable prompt format that includes:
+        Includes:
         - Customer profile summary
         - Account information
         - Transaction details with key metrics
@@ -204,8 +224,6 @@ class RiskAnalystAgent:
 def create_chain_of_thought_framework():
     """Helper function showing Chain-of-Thought structure
     
-    TODO: Study this example and adapt for financial crime analysis:
-    
     **Analysis Framework** (Think step-by-step):
     1. **Data Review**: What does the data tell us?
     2. **Pattern Recognition**: What patterns are suspicious?
@@ -224,7 +242,7 @@ def create_chain_of_thought_framework():
 def get_classification_categories():
     """Standard SAR classification categories
     
-    TODO: Use these categories in your prompts:
+    These categories are included in the system prompt:
     """
     return {
         "Structuring": "Transactions designed to avoid reporting thresholds",
@@ -236,28 +254,10 @@ def get_classification_categories():
 
 # ===== TESTING UTILITIES =====
 
-def test_agent_with_sample_case():
-    """Test the agent with a sample case
-    
-    TODO: Use this function to test your implementation:
-    - Create sample case data
-    - Initialize agent
-    - Run analysis
-    - Validate results
-    """
-    print("🧪 Testing Risk Analyst Agent")
-    print("TODO: Implement test case")
-
 if __name__ == "__main__":
     print("🔍 Risk Analyst Agent Module")
     print("Chain-of-Thought reasoning for suspicious activity classification")
-    print("\n📋 TODO Items:")
-    print("• Design Chain-of-Thought system prompt")
-    print("• Implement analyze_case method")
-    print("• Add JSON parsing and validation")
-    print("• Create comprehensive error handling")
-    print("• Test with sample cases")
-    print("\n💡 Key Concepts:")
+    print("\nImplemented capabilities:")
     print("• Chain-of-Thought: Step-by-step reasoning")
     print("• Structured Output: Validated JSON responses")
     print("• Financial Crime Detection: Pattern recognition")

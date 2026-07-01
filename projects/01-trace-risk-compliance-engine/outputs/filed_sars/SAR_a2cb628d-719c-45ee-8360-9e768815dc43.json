@@ -1,0 +1,78 @@
+{
+  "sar_metadata": {
+    "sar_id": "SAR_a2cb628d-719c-45ee-8360-9e768815dc43",
+    "case_id": "0107a51f-ba28-4856-aab3-68ed8845e63b",
+    "filing_date": "2026-07-01T18:27:11.906725+00:00",
+    "filing_type": "Suspicious Activity Report",
+    "ai_generated": true,
+    "review_status": "human_approved",
+    "schema_version": "1.1",
+    "sha256": "a1d31adfaa1ad5280ae5efd4e37370b5cc1ea3a825c2cec9eb833bbfc8d9421b"
+  },
+  "subject_information": {
+    "customer_name": "Jacqueline Rodriguez",
+    "customer_id": "CUST_0111",
+    "address": "49331 Lewis Views Apt. 516, Lake Maryshire, DE 59549",
+    "date_of_birth": "2001-02-01",
+    "ssn_last_4": "9067",
+    "customer_since": "2022-02-27",
+    "risk_rating": "High",
+    "account_ids": [
+      "CUST_0111_ACC_1",
+      "CUST_0111_ACC_2",
+      "CUST_0111_ACC_3"
+    ]
+  },
+  "suspicious_activity": {
+    "classification": "Money_Laundering",
+    "risk_level": "High",
+    "confidence_score": 0.85,
+    "narrative": "Jacqueline Rodriguez (CUST_0111) engaged in suspicious activity in 2025, involving multiple high-value transactions across different accounts. Notably, large wire transfers were made from 2025-07-29 to 2025-07-31, including an incoming wire transfer of $76,517.25 and outgoing transfers totaling $49,517.51. This pattern may indicate an attempt at money laundering.",
+    "key_indicators": [
+      "High risk rating",
+      "High value transactions",
+      "Multiple accounts",
+      "Large wire transfers"
+    ],
+    "ai_reasoning": "The customer has a high risk rating and has conducted multiple high-value transactions across different accounts. There are also several large wire transfers (e.g., transactions 41-45) which could indicate an attempt to move illicit funds. However, more investigation is needed to confirm.",
+    "transaction_count": 121,
+    "absolute_transaction_total": 386834.91,
+    "activity_start_date": "2025-02-05",
+    "activity_end_date": "2025-08-01"
+  },
+  "regulatory_compliance": {
+    "citations": [
+      "31 CFR 1020.320 (BSA)"
+    ],
+    "narrative_word_count": 47,
+    "completeness_check": true,
+    "compliance_status": "approved"
+  },
+  "filing_institution": {
+    "name": "Demo Financial Institution",
+    "contact_role": "BSA/AML Compliance Officer"
+  },
+  "audit_trail": {
+    "case_id": "0107a51f-ba28-4856-aab3-68ed8845e63b",
+    "processing_date": "2026-07-01T18:27:11.906725+00:00",
+    "agent_decisions": {
+      "risk_analyst": {
+        "classification": "Money_Laundering",
+        "confidence_score": 0.85,
+        "risk_level": "High"
+      },
+      "compliance_officer": {
+        "completeness_check": true,
+        "citations": [
+          "31 CFR 1020.320 (BSA)"
+        ]
+      }
+    },
+    "human_review": {
+      "decision": "PROCEED",
+      "reviewer_id": "demo_reviewer",
+      "rationale": "No additional reviewer rationale provided.",
+      "decision_timestamp": "2026-07-01T18:27:05.534845+00:00"
+    }
+  }
+}

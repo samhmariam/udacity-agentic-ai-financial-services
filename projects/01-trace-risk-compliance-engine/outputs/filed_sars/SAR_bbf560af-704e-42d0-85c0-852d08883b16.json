@@ -1,0 +1,62 @@
+{
+  "sar_metadata": {
+    "sar_id": "SAR_bbf560af-704e-42d0-85c0-852d08883b16",
+    "filing_date": "2026-07-01T17:54:50.217129+00:00",
+    "filing_type": "Suspicious Activity Report",
+    "ai_generated": true,
+    "review_status": "human_approved",
+    "schema_version": "1.0",
+    "sha256": "fe9a8ccabbc005613d47df224c337202c5109222ebf61d3d7dbcd3bd85e1ff0f"
+  },
+  "subject_information": {
+    "customer_name": "Cindy Clayton",
+    "customer_id": "CUST_0057",
+    "address": "08330 Robert Stravenue, Garciaberg, AL 72636",
+    "date_of_birth": "1961-08-31",
+    "ssn_last_4": "5450",
+    "customer_since": "2020-05-26",
+    "risk_rating": "High",
+    "account_ids": [
+      "CUST_0057_ACC_1",
+      "CUST_0057_ACC_2",
+      "CUST_0057_ACC_3"
+    ]
+  },
+  "suspicious_activity": {
+    "classification": "Structuring",
+    "risk_level": "High",
+    "confidence_score": 0.85,
+    "narrative": "Cindy Clayton (CUST_0057) engaged in suspicious activity from February to August 2025. Multiple transactions of similar amounts were observed across different accounts. Notably, on 2025-07-31 and 2025-08-01, multiple ATM withdrawals and deposits were made on the same day, potentially indicating structuring to avoid reporting thresholds.",
+    "key_indicators": [
+      "Multiple transactions of similar amounts",
+      "High risk rating",
+      "Multiple ATM transactions on the same day"
+    ],
+    "ai_reasoning": "The customer has a high risk rating and is making multiple transactions of similar amounts across different accounts. Multiple ATM withdrawals and deposits on the same day (2025-07-31 and 2025-08-01) are suspicious and may indicate an attempt to avoid reporting thresholds.",
+    "transaction_count": 101,
+    "absolute_transaction_total": 286342.62,
+    "activity_start_date": "2025-02-05",
+    "activity_end_date": "2025-08-02"
+  },
+  "regulatory_compliance": {
+    "citations": [
+      "31 CFR 1020.320 (BSA)"
+    ],
+    "narrative_word_count": 45,
+    "completeness_check": true,
+    "compliance_status": "approved"
+  },
+  "filing_institution": {
+    "name": "Demo Financial Institution",
+    "contact_role": "BSA/AML Compliance Officer"
+  },
+  "audit_trail": {
+    "case_id": "1fbbf88d-ceff-4cc7-ace7-ef663c98f03a",
+    "processing_date": "2026-07-01T17:54:50.217129+00:00",
+    "ai_agents_used": [
+      "RiskAnalyst",
+      "ComplianceOfficer"
+    ],
+    "human_review_required": true
+  }
+}

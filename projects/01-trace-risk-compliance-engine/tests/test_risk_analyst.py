@@ -202,10 +202,20 @@ class TestRiskAnalystAgent:
             risk_rating="Low"
         )
         
+        account = AccountData(
+            account_id="ACC_ERROR",
+            customer_id="CUST_TEST",
+            account_type="Checking",
+            opening_date="2020-01-01",
+            current_balance=100.0,
+            average_monthly_balance=100.0,
+            status="Active"
+        )
+
         case = CaseData(
             case_id="CASE_ERROR",
             customer=customer,
-            accounts=[],
+            accounts=[account],
             transactions=[TransactionData(
                 transaction_id="TXN_ERROR",
                 account_id="ACC_ERROR",
@@ -227,6 +237,7 @@ class TestRiskAnalystAgent:
         assert len(logger.entries) == 1
         assert logger.entries[0]["success"] == False
         assert "JSON parsing failed" in logger.entries[0]["reasoning"]
+        assert mock_client.chat.completions.create.call_count == 2
         
         # Cleanup
         if os.path.exists("test_json_error.jsonl"):
@@ -399,10 +410,20 @@ That completes the analysis.'''
             risk_rating="Low"
         )
         
+        account = AccountData(
+            account_id="ACC_API",
+            customer_id="CUST_API",
+            account_type="Checking",
+            opening_date="2021-01-01",
+            current_balance=1000.0,
+            average_monthly_balance=1000.0,
+            status="Active"
+        )
+
         case = CaseData(
             case_id="CASE_API",
             customer=customer,
-            accounts=[],
+            accounts=[account],
             transactions=[TransactionData(
                 transaction_id="TXN_API",
                 account_id="ACC_API",
@@ -430,3 +451,107 @@ That completes the analysis.'''
         # Cleanup
         if os.path.exists("test_api.jsonl"):
             os.remove("test_api.jsonl")
+
+    @pytest.mark.parametrize(
+        "classification",
+        ["Structuring", "Sanctions", "Fraud", "Money_Laundering", "Other"],
+    )
+    def test_all_supported_classifications(self, classification):
+        """Every rubric classification is accepted and returned by the agent."""
+        mock_client = Mock()
+        mock_response = Mock()
+        mock_response.choices = [Mock()]
+        mock_response.choices[0].message.content = json.dumps({
+            "classification": classification,
+            "confidence_score": 0.8,
+            "reasoning": f"Evidence supports {classification}",
+            "key_indicators": ["test indicator"],
+            "risk_level": "High",
+        })
+        mock_client.chat.completions.create.return_value = mock_response
+        logger = Mock()
+        agent = RiskAnalystAgent(mock_client, logger)
+        customer = CustomerData(
+            customer_id="CUST_CLASS",
+            name="Classification Test",
+            date_of_birth="1980-01-01",
+            ssn_last_4="1234",
+            address="123 Test St",
+            customer_since="2020-01-01",
+            risk_rating="High",
+        )
+        account = AccountData(
+            account_id="ACC_CLASS",
+            customer_id="CUST_CLASS",
+            account_type="Checking",
+            opening_date="2020-01-01",
+            current_balance=10000.0,
+            average_monthly_balance=8000.0,
+            status="Active",
+        )
+        transaction = TransactionData(
+            transaction_id="TXN_CLASS",
+            account_id="ACC_CLASS",
+            transaction_date="2025-01-01",
+            transaction_type="Wire_Transfer",
+            amount=10000.0,
+            description="Classification test",
+            method="Wire",
+        )
+        case = CaseData(
+            case_id="CASE_CLASS",
+            customer=customer,
+            accounts=[account],
+            transactions=[transaction],
+            case_created_at=datetime.now().isoformat(),
+            data_sources={"test": "classification"},
+        )
+
+        result = agent.analyze_case(case)
+
+        assert result.classification == classification
+
+    def test_malformed_response_is_retried_once(self):
+        """A malformed first response is recovered through a correction retry."""
+        mock_client = Mock()
+        malformed = Mock()
+        malformed.choices = [Mock()]
+        malformed.choices[0].message.content = "not json"
+        corrected = Mock()
+        corrected.choices = [Mock()]
+        corrected.choices[0].message.content = json.dumps({
+            "classification": "Other",
+            "confidence_score": 0.5,
+            "reasoning": "Insufficient evidence for a specific typology",
+            "key_indicators": ["unusual activity"],
+            "risk_level": "Medium",
+        })
+        mock_client.chat.completions.create.side_effect = [malformed, corrected]
+        agent = RiskAnalystAgent(mock_client, Mock())
+        customer = CustomerData(
+            customer_id="CUST_RETRY", name="Retry Test",
+            date_of_birth="1980-01-01", ssn_last_4="1234",
+            address="123 Test St", customer_since="2020-01-01",
+            risk_rating="Medium",
+        )
+        account = AccountData(
+            account_id="ACC_RETRY", customer_id="CUST_RETRY",
+            account_type="Checking", opening_date="2020-01-01",
+            current_balance=1000.0, average_monthly_balance=900.0,
+            status="Active",
+        )
+        transaction = TransactionData(
+            transaction_id="TXN_RETRY", account_id="ACC_RETRY",
+            transaction_date="2025-01-01", transaction_type="Deposit",
+            amount=100.0, description="Retry test", method="ACH",
+        )
+        case = CaseData(
+            case_id="CASE_RETRY", customer=customer, accounts=[account],
+            transactions=[transaction], case_created_at=datetime.now().isoformat(),
+            data_sources={"test": "retry"},
+        )
+
+        result = agent.analyze_case(case)
+
+        assert result.classification == "Other"
+        assert mock_client.chat.completions.create.call_count == 2
