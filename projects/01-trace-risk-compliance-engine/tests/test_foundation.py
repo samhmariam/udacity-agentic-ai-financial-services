@@ -278,6 +278,52 @@ class TestDataLoader:
         if os.path.exists("test_audit.jsonl"):
             os.remove("test_audit.jsonl")
 
+    @pytest.mark.skipif(not FOUNDATION_IMPLEMENTED, reason="Foundation not implemented yet")
+    def test_csv_data_loading_normalizes_missing_optional_transaction_fields(self):
+        """Test pandas NaN values are normalized for optional CSV fields."""
+        logger = ExplainabilityLogger("test_audit.jsonl")
+        loader = DataLoader(logger)
+        customer_data = {
+            "customer_id": "CUST_0001",
+            "name": "Test Customer",
+            "date_of_birth": "1980-01-01",
+            "ssn_last_4": "1234",
+            "address": "123 Test St",
+            "customer_since": "2020-01-01",
+            "risk_rating": "Medium",
+            "annual_income": 75000,
+        }
+        account_data = [{
+            "account_id": "CUST_0001_ACC_1",
+            "customer_id": "CUST_0001",
+            "account_type": "Checking",
+            "opening_date": "2020-01-01",
+            "current_balance": 10000.0,
+            "average_monthly_balance": 8000.0,
+            "status": "Active",
+        }]
+        transaction_data = [{
+            "transaction_id": "TXN_001",
+            "account_id": "CUST_0001_ACC_1",
+            "transaction_date": "2025-01-01",
+            "transaction_type": "Cash_Deposit",
+            "amount": 9900.0,
+            "description": "Test transaction",
+            "method": "Cash",
+            "counterparty": float("nan"),
+            "location": float("nan"),
+        }]
+
+        try:
+            case = loader.create_case_from_data(
+                customer_data, account_data, transaction_data
+            )
+            assert case.transactions[0].counterparty is None
+            assert case.transactions[0].location is None
+        finally:
+            if os.path.exists("test_audit.jsonl"):
+                os.remove("test_audit.jsonl")
+
 class TestExplainabilityLogger:
     """Test ExplainabilityLogger audit functionality"""
     

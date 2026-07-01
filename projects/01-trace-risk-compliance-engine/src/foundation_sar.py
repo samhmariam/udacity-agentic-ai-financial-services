@@ -75,6 +75,11 @@ class CustomerData(BaseModel):
             raise ValueError('date must be in YYYY-MM-DD format') from exc
         return value
 
+    @field_validator('ssn_last_4', mode='before')
+    @classmethod
+    def normalize_ssn_last_4(cls, value: Any) -> str:
+        return str(value).strip()
+
     @field_validator('ssn_last_4')
     @classmethod
     def validate_ssn_last_4(cls, value: str) -> str:
@@ -145,6 +150,14 @@ class TransactionData(BaseModel):
     method: str = Field(..., description="Method used to execute the transaction")
     counterparty: Optional[str] = Field(None, description="Other party involved in the transaction")
     location: Optional[str] = Field(None, description="Transaction location or branch")
+
+    @field_validator('counterparty', 'location', mode='before')
+    @classmethod
+    def normalize_optional_text(cls, value: Any) -> Optional[str]:
+        """Convert pandas missing-value sentinels to Pydantic-compatible None."""
+        if value is None or pd.isna(value):
+            return None
+        return value
 
     @field_validator('transaction_date')
     @classmethod
